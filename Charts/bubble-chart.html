@@ -1,0 +1,112 @@
+<html>
+<head>
+	<title></title>
+
+    <style type="text/css" media="screen">
+    
+        body {
+            background-color:lightgrey;
+
+        }
+
+        h1{
+            font-size:37;
+            line-height: 95%;
+            font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+            font-weight:900;
+            background-color: black; 
+        }
+
+        #container{
+            background-color:black;
+            width:320px;
+            margin-left:10px;
+            margin-right:auto;
+            padding:5px 5px 5px 15px;
+        }
+
+        svg{
+            margin-left:200px;
+        }
+
+    </style>    
+</head>
+<body>
+    <div id="container">
+        <h1 style="color:white">INCARCERATION RATE PER 100,000 PEOPLE</h1>
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script>
+
+    var margin = {top:0, right:200, bottom:0, left:200},
+        width  = 900 - margin.left - margin.right,
+        height = 700 - margin.top  - margin.bottom;
+
+	var diameter = 800; //max size of the bubbles
+        //color    = d3.scale.category20b(); //color category
+
+    var color = d3.scale.linear()
+        .domain([10, 100, 150, 500])
+        .range(["purple", "orange", "red", "black"]);
+
+	var bubble = d3.layout.pack()
+	    .sort(null)
+	    .size([diameter, diameter])
+	    .padding(1.5);
+
+	var svg = d3.select("body")
+	    .append("svg")
+	    .attr("width", diameter)
+	    .attr("height", diameter)
+	    .attr("class", "bubble");
+
+	d3.csv("Incarceration.csv", function(error, data){
+
+    //convert numerical values from strings to numbers
+    data = data.map(function(d){ d.value = +d["Rate"]; return d; });
+
+    //bubbles needs very specific format, convert data to this.
+    var nodes = bubble.nodes({children:data}).filter(function(d) { return !d.children; });
+
+    //set up the chart
+    var bubbles = svg.append("g")
+        .attr("transform", "translate(0,0)")
+        .selectAll(".bubble")
+        .data(nodes)
+        .enter();
+
+    //create the bubbles
+    bubbles.append("circle")
+        .attr("r", 10)
+        .transition()   //animate attributes after this
+        .duration(600) //duration of animation
+        .delay(function (d,i){
+            return i*50
+        })
+        .attr("r", function(d){ return d.r; })
+        .attr("cx", function(d){ return d.x; })
+        .attr("cy", function(d){ return d.y; })
+        .style("fill", function(d) { return color(d.value); })
+
+    //format the text for each bubble
+    bubbles.append("text")
+        .attr("x", function(d){ return d.x; })
+        .attr("y", function(d){ return d.y + 5; })
+        .attr("text-anchor", "middle")
+        .transition()   //animate attributes after this
+        .duration(500) //duration of animation
+        .delay(function (d,i){
+            return i*50
+        })
+        .text(function(d){ return d["Country"]; })
+        .style({
+            "fill":"white", 
+            "font-family":"Helvetica Neue, Helvetica, Arial, san-serif",
+            "font-size": "10px"
+        });
+
+})
+
+
+</script>
+</body>
+</html>
